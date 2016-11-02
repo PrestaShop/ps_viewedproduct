@@ -24,8 +24,8 @@
 *}
 
 <section>
-  <h1>{l s='Viewed products' d='Modules.Viewedproduct.Shop'}</h1>
-  <div>
+  <h2>{l s='Viewed products' d='Modules.Viewedproduct.Shop'}</h2>
+  <div class="products">
     {foreach from=$products item="product"}
       {include file="catalog/_partials/miniatures/product.tpl" product=$product}
     {/foreach}
