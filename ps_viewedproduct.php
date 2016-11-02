@@ -34,7 +34,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-class Ps_ViewedProduct extends Module implements WidgetInterface
+class Ps_Viewedproduct extends Module implements WidgetInterface
 {
     private $templateFile;
 
@@ -63,7 +63,7 @@ class Ps_ViewedProduct extends Module implements WidgetInterface
     public function install()
     {
         return parent::install()
-            && Configuration::updateValue('PRODUCTS_VIEWED_NBR', 4)
+            && Configuration::updateValue('PRODUCTS_VIEWED_NBR', 8)
             && $this->registerHook('displayFooterProduct')
             && $this->registerHook('displayProductButtons')
             && $this->registerHook('actionObjectProductDeleteAfter')
