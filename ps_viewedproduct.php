@@ -45,16 +45,16 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
         $this->version = '1.0.1';
         $this->need_instance = 0;
 
-        $this->ps_versions_compliancy = array(
+        $this->ps_versions_compliancy = [
             'min' => '1.7.0.0',
             'max' => _PS_VERSION_,
-        );
+        ];
 
         $this->bootstrap = true;
         parent::__construct();
 
-        $this->displayName = $this->trans('Viewed products block', array(), 'Modules.Viewedproduct.Admin');
-        $this->description = $this->trans('Adds a block displaying recently viewed products.', array(), 'Modules.Viewedproduct.Admin');
+        $this->displayName = $this->trans('Viewed products block', [], 'Modules.Viewedproduct.Admin');
+        $this->description = $this->trans('Adds a block displaying recently viewed products.', [], 'Modules.Viewedproduct.Admin');
 
 
         $this->templateFile = 'module:ps_viewedproduct/views/template/hook/ps_viewedproduct.tpl';
@@ -92,15 +92,15 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
 
         if (Tools::isSubmit('submitBlockViewed')) {
             if (!($productNbr = Tools::getValue('PRODUCTS_VIEWED_NBR')) || empty($productNbr)) {
-                $output .= $this->displayError($this->trans('You must fill in the \'Products displayed\' field.', array(), 'Modules.Viewedproduct.Admin'));
+                $output .= $this->displayError($this->trans('You must fill in the \'Products displayed\' field.', [], 'Modules.Viewedproduct.Admin'));
             } elseif (0 === (int)($productNbr)) {
-                $output .= $this->displayError($this->trans('Invalid number.', array(), 'Modules.Viewedproduct.Admin'));
+                $output .= $this->displayError($this->trans('Invalid number.', [], 'Modules.Viewedproduct.Admin'));
             } else {
                 Configuration::updateValue('PRODUCTS_VIEWED_NBR', (int)$productNbr);
 
                 $this->_clearCache('*');
 
-                $output .= $this->displayConfirmation($this->trans('The settings have been updated.', array(), 'Admin.Notifications.Success'));
+                $output .= $this->displayConfirmation($this->trans('The settings have been updated.', [], 'Admin.Notifications.Success'));
             }
         }
         return $output . $this->renderForm();
@@ -108,26 +108,26 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
 
     public function renderForm()
     {
-        $fields_form = array(
-            'form' => array(
-                'legend' => array(
-                    'title' => $this->trans('Settings', array(), 'Admin.Global'),
+        $fields_form = [
+            'form' => [
+                'legend' => [
+                    'title' => $this->trans('Settings', [], 'Admin.Global'),
                     'icon' => 'icon-cogs'
-                ),
-                'input' => array(
-                    array(
+                ],
+                'input' => [
+                    [
                         'type' => 'text',
-                        'label' => $this->trans('Products to display', array(), 'Modules.Viewedproduct.Admin'),
+                        'label' => $this->trans('Products to display', [], 'Modules.Viewedproduct.Admin'),
                         'name' => 'PRODUCTS_VIEWED_NBR',
                         'class' => 'fixed-width-xs',
-                        'desc' => $this->trans('Define the number of products displayed in this block.', array(), 'Modules.Viewedproduct.Admin'),
-                    ),
-                ),
-                'submit' => array(
-                    'title' => $this->trans('Save', array(), 'Admin.Actions'),
-                ),
-            ),
-        );
+                        'desc' => $this->trans('Define the number of products displayed in this block.', [], 'Modules.Viewedproduct.Admin'),
+                    ],
+                ],
+                'submit' => [
+                    'title' => $this->trans('Save', [], 'Admin.Actions'),
+                ],
+            ],
+        ];
 
         $lang = new Language((int)Configuration::get('PS_LANG_DEFAULT'));
 
@@ -143,20 +143,20 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
             '&tab_module=' . $this->tab .
             '&module_name=' . $this->name;
         $helper->token = Tools::getAdminTokenLite('AdminModules');
-        $helper->tpl_vars = array(
+        $helper->tpl_vars = [
             'fields_value' => $this->getConfigFieldsValues(),
             'languages' => $this->context->controller->getLanguages(),
             'id_language' => $this->context->language->id
-        );
+        ];
 
-        return $helper->generateForm(array($fields_form));
+        return $helper->generateForm([$fields_form]);
     }
 
     public function getConfigFieldsValues()
     {
-        return array(
+        return [
             'PRODUCTS_VIEWED_NBR' => Tools::getValue('PRODUCTS_VIEWED_NBR', Configuration::get('PRODUCTS_VIEWED_NBR')),
-        );
+        ];
     }
 
     public function getCacheId($name = null)
@@ -195,16 +195,16 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
         $products = $this->getViewedProducts($configuration['product']['id_product']);
 
         if (!empty($products)) {
-            return array(
+            return [
                 'products' => $products,
-            );
+            ];
         }
         return false;
     }
 
     protected function addViewedProduct($idProduct)
     {
-        $arr = array();
+        $arr = [];
 
         if (isset($this->context->cookie->viewed)) {
             $arr = explode(',', $this->context->cookie->viewed);
@@ -243,14 +243,14 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
                 $this->context->getTranslator()
             );
 
-            $products_for_template = array();
+            $products_for_template = [];
 
             if (is_array($productIds)) {
                 foreach ($productIds as $productId) {
                     if ($idProductPage != $productId) {
                         $products_for_template[] = $presenter->present(
                             $presentationSettings,
-                            $assembler->assembleProduct(array('id_product' => $productId)),
+                            $assembler->assembleProduct(['id_product' => $productId]),
                             $this->context->language
                         );
                     }
