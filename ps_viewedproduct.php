@@ -168,8 +168,8 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
 
     public function renderWidget($hookName = null, array $configuration = [])
     {
-        if ('displayProductButtons' === $hookName) {
-            $this->addViewedProduct($configuration['product']['id_product']);
+        if ('product' === $this->context->controller->php_self) {
+            $this->addViewedProduct($this->context->controller->getProduct()->id);
             return;
         }
 
@@ -192,7 +192,11 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
 
     public function getWidgetVariables($hookName = null, array $configuration = [])
     {
-        $products = $this->getViewedProducts($configuration['product']['id_product']);
+        if ('product' === $this->context->controller->php_self) {
+            $products = $this->getViewedProducts($this->context->controller->getProduct()->id);
+        } else {
+            $products = $this->getViewedProducts(false);
+        }
 
         if (!empty($products)) {
             return array(
@@ -262,6 +266,4 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
 
         return false;
     }
-
-
 }
