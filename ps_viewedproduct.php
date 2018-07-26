@@ -247,6 +247,8 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
 
             if (is_array($productIds)) {
                 foreach ($productIds as $productId) {
+ 		    $result = Db::getInstance()->getValue('SELECT id_product FROM `'._DB_PREFIX_.'product` WHERE id_product = '.$productId.' AND active=1');					
+		    if (!$result) continue;
                     if ($idProductPage != $productId) {
                         $products_for_template[] = $presenter->present(
                             $presentationSettings,
