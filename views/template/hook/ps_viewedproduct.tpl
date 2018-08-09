@@ -23,7 +23,7 @@
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 
-<section>
+<section class="featured-products clearfix">
   <h2>{l s='Viewed products' d='Modules.Viewedproduct.Shop'}</h2>
   <div class="products">
     {foreach from=$products item="product"}
