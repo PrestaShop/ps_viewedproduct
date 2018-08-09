@@ -1,6 +1,6 @@
 <?php
 /**
-* 2007-2018 PrestaShop
+* 2007-2018 PrestaShop.
 *
 * NOTICE OF LICENSE
 *
@@ -62,7 +62,6 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
             'Modules.Viewedproduct.Admin'
         );
 
-
         $this->templateFile = 'module:ps_viewedproduct/views/templates/hook/ps_viewedproduct.tpl';
     }
 
@@ -99,10 +98,10 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
                     array(),
                     'Modules.Viewedproduct.Admin'
                 ));
-            } elseif (0 === (int)($productNbr)) {
+            } elseif (0 === (int) ($productNbr)) {
                 $output .= $this->displayError($this->trans('Invalid number.', array(), 'Modules.Viewedproduct.Admin'));
             } else {
-                Configuration::updateValue('PRODUCTS_VIEWED_NBR', (int)$productNbr);
+                Configuration::updateValue('PRODUCTS_VIEWED_NBR', (int) $productNbr);
 
                 $this->_clearCache($this->templateFile);
 
@@ -113,6 +112,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
                 ));
             }
         }
+
         return $output . $this->renderForm();
     }
 
@@ -122,7 +122,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
             'form' => array(
                 'legend' => array(
                     'title' => $this->trans('Settings', array(), 'Admin.Global'),
-                    'icon' => 'icon-cogs'
+                    'icon' => 'icon-cogs',
                 ),
                 'input' => array(
                     array(
@@ -143,14 +143,14 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
             ),
         );
 
-        $lang = new Language((int)Configuration::get('PS_LANG_DEFAULT'));
+        $lang = new Language((int) Configuration::get('PS_LANG_DEFAULT'));
 
         $helper = new HelperForm();
         $helper->show_toolbar = false;
-        $helper->table =  $this->table;
+        $helper->table = $this->table;
         $helper->default_form_language = $lang->id;
         $configFormLang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG');
-        $helper->allow_employee_form_lang = $configFormLang = $configFormLang ? $configFormLang : 0;
+        $helper->allow_employee_form_lang = $configFormLang ? $configFormLang : 0;
         $helper->identifier = $this->identifier;
         $helper->submit_action = 'submitBlockViewed';
         $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false) .
@@ -161,7 +161,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
         $helper->tpl_vars = array(
             'fields_value' => $this->getConfigFieldsValues(),
             'languages' => $this->context->controller->getLanguages(),
-            'id_language' => $this->context->language->id
+            'id_language' => $this->context->language->id,
         );
 
         return $helper->generateForm(array($fields_form));
@@ -183,9 +183,13 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
 
     public function renderWidget($hookName = null, array $configuration = array())
     {
-        $this->currentProductId = $configuration['product']['id_product'];
+        if (isset($configuration['product']['id_product'])) {
+            $this->currentProductId = $configuration['product']['id_product'];
+        }
+
         if ('displayProductButtons' === $hookName || 'displayProductAdditionalInfo' === $hookName) {
             $this->addViewedProduct($this->currentProductId);
+
             return;
         }
 
@@ -208,13 +212,18 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
 
     public function getWidgetVariables($hookName = null, array $configuration = array())
     {
-        $products = $this->getViewedProducts($configuration['product']['id_product']);
+        if (isset($configuration['product']['id_product'])) {
+            $this->currentProductId = $configuration['product']['id_product'];
+        }
+
+        $products = $this->getViewedProducts();
 
         if (!empty($products)) {
             return array(
                 'products' => $products,
             );
         }
+
         return false;
     }
 
@@ -243,7 +252,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
         return array_slice($arr, 0, (int) (Configuration::get('PRODUCTS_VIEWED_NBR')));
     }
 
-    protected function getViewedProducts($idProductPage)
+    protected function getViewedProducts()
     {
         $productIds = $this->getViewedProductIds();
 
@@ -266,7 +275,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
 
             if (is_array($productIds)) {
                 foreach ($productIds as $productId) {
-                    if ($idProductPage != $productId) {
+                    if ($this->currentProductId != $productId) {
                         $products_for_template[] = $presenter->present(
                             $presentationSettings,
                             $assembler->assembleProduct(array('id_product' => $productId)),

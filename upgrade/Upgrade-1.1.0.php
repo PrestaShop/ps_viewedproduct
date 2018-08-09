@@ -1,6 +1,6 @@
 <?php
 /**
- * 2007-2018 PrestaShop
+ * 2007-2018 PrestaShop.
  *
  * NOTICE OF LICENSE
  *
@@ -26,6 +26,7 @@
 
 /**
  * @param Module $module
+ *
  * @return bool
  */
 function upgrade_module_1_1_0($module)
