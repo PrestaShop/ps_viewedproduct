@@ -296,11 +296,15 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
         return false;
     }
 
+    /**
+     * @return array the list of active product ids.
+     */
     private function getExistingProductsIds()
     {
         $existingProductsQuery = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS('
             SELECT p.id_product
-            FROM ' . _DB_PREFIX_ . 'product p'
+            FROM ' . _DB_PREFIX_ . 'product p
+            WHERE p.active = 1'
         );
 
         return array_map(function ($entry) {
