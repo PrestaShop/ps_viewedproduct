@@ -27,7 +27,7 @@
 use PrestaShop\PrestaShop\Core\Module\WidgetInterface;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Adapter\Product\PriceFormatter;
-use PrestaShop\PrestaShop\Core\Product\ProductListingPresenter;
+use PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductListingPresenter;
 use PrestaShop\PrestaShop\Adapter\Product\ProductColorsRetriever;
 
 if (!defined('_PS_VERSION_')) {
@@ -43,7 +43,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
     {
         $this->name = 'ps_viewedproduct';
         $this->author = 'PrestaShop';
-        $this->version = '1.1.0';
+        $this->version = '1.2.0';
         $this->tab = 'front_office_features';
         $this->need_instance = 0;
 
@@ -244,12 +244,17 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
 
     protected function getViewedProductIds()
     {
-        $arr = array_reverse(explode(',', $this->context->cookie->viewed));
-        if (null !== $this->currentProductId && in_array($this->currentProductId, $arr)) {
-            $arr = array_diff($arr, array($this->currentProductId));
+        $viewedProductsIds = array_reverse(explode(',', $this->context->cookie->viewed));
+        if (null !== $this->currentProductId && in_array($this->currentProductId, $viewedProductsIds)) {
+            $viewedProductsIds = array_diff($viewedProductsIds, array($this->currentProductId));
         }
 
-        return array_slice($arr, 0, (int) (Configuration::get('PRODUCTS_VIEWED_NBR')));
+        $existingProducts = $this->getExistingProductsIds();
+        $viewedProductsIds = array_filter($viewedProductsIds, function ($entry) use ($existingProducts) {
+            return in_array($entry, $existingProducts);
+        });
+
+        return array_slice($viewedProductsIds, 0, (int) (Configuration::get('PRODUCTS_VIEWED_NBR')));
     }
 
     protected function getViewedProducts()
@@ -275,7 +280,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
 
             if (is_array($productIds)) {
                 foreach ($productIds as $productId) {
-                    if ($this->currentProductId != $productId) {
+                    if ($this->currentProductId !== $productId) {
                         $products_for_template[] = $presenter->present(
                             $presentationSettings,
                             $assembler->assembleProduct(array('id_product' => $productId)),
@@ -289,5 +294,21 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
         }
 
         return false;
+    }
+
+    /**
+     * @return array the list of active product ids.
+     */
+    private function getExistingProductsIds()
+    {
+        $existingProductsQuery = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS('
+            SELECT p.id_product
+            FROM ' . _DB_PREFIX_ . 'product p
+            WHERE p.active = 1'
+        );
+
+        return array_map(function ($entry) {
+            return $entry['id_product'];
+        }, $existingProductsQuery);
     }
 }
