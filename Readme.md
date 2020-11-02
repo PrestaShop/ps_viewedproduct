@@ -2,7 +2,7 @@
 
 ## About
 
-Shows to your shop's users which products they recently viewed.
+Display a kind of showcase on your product pages with recently viewed products.
 
 ## Multistore compatibility
 

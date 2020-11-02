@@ -57,7 +57,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
 
         $this->displayName = $this->trans('Viewed products block', array(), 'Modules.Viewedproduct.Admin');
         $this->description = $this->trans(
-            'Adds a block displaying recently viewed products.',
+            'Display a kind of showcase on your product pages with recently viewed products.',
             array(),
             'Modules.Viewedproduct.Admin'
         );
