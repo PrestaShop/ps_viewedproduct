@@ -92,7 +92,8 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
         $output = '';
 
         if (Tools::isSubmit('submitBlockViewed')) {
-            if (!($productNbr = Tools::getValue('PRODUCTS_VIEWED_NBR')) || empty($productNbr)) {
+            $productNbr = Tools::getValue('PRODUCTS_VIEWED_NBR');
+            if (empty($productNbr)) {
                 $output .= $this->displayError($this->trans(
                     'You must fill in the \'Products displayed\' field.',
                     array(),
@@ -193,7 +194,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
             return;
         }
 
-        if (!isset($this->context->cookie->viewed) || empty($this->context->cookie->viewed)) {
+        if (empty($this->context->cookie->viewed)) {
             return;
         }
 
