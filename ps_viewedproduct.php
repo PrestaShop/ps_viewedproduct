@@ -70,7 +70,6 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
         return parent::install()
             && Configuration::updateValue('PRODUCTS_VIEWED_NBR', 8)
             && $this->registerHook('displayFooterProduct')
-            && $this->registerHook('displayProductButtons') //Former version of displayProductAdditionalInfo
             && $this->registerHook('displayProductAdditionalInfo')
             && $this->registerHook('actionObjectProductDeleteAfter')
             && $this->registerHook('actionObjectProductUpdateAfter')
@@ -187,7 +186,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
             $this->currentProductId = $configuration['product']['id_product'];
         }
 
-        if ('displayProductButtons' === $hookName || 'displayProductAdditionalInfo' === $hookName) {
+        if ('displayProductAdditionalInfo' === $hookName) {
             $this->addViewedProduct($this->currentProductId);
 
             return;
