@@ -43,7 +43,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
     {
         $this->name = 'ps_viewedproduct';
         $this->author = 'PrestaShop';
-        $this->version = '1.2.1';
+        $this->version = '1.2.2';
         $this->tab = 'front_office_features';
         $this->need_instance = 0;
 
@@ -57,7 +57,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
 
         $this->displayName = $this->trans('Viewed products block', array(), 'Modules.Viewedproduct.Admin');
         $this->description = $this->trans(
-            'Adds a block displaying recently viewed products.',
+            'Display a kind of showcase on your product pages with recently viewed products.',
             array(),
             'Modules.Viewedproduct.Admin'
         );
@@ -70,7 +70,6 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
         return parent::install()
             && Configuration::updateValue('PRODUCTS_VIEWED_NBR', 8)
             && $this->registerHook('displayFooterProduct')
-            && $this->registerHook('displayProductButtons') //Former version of displayProductAdditionalInfo
             && $this->registerHook('displayProductAdditionalInfo')
             && $this->registerHook('actionObjectProductDeleteAfter')
             && $this->registerHook('actionObjectProductUpdateAfter')
@@ -187,7 +186,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
             $this->currentProductId = $configuration['product']['id_product'];
         }
 
-        if ('displayProductButtons' === $hookName || 'displayProductAdditionalInfo' === $hookName) {
+        if ('displayProductAdditionalInfo' === $hookName) {
             $this->addViewedProduct($this->currentProductId);
 
             return;
