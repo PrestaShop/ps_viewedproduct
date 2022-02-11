@@ -300,7 +300,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
      */
     private function getExistingProductsIds()
     {
-        $existingProductsQuery = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS('
+        $existingProductsQuery = Db::getInstance((bool) _PS_USE_SQL_SLAVE_)->executeS('
             SELECT p.id_product
             FROM ' . _DB_PREFIX_ . 'product p
             WHERE p.active = 1'

@@ -3,4 +3,5 @@ includes:
 
 parameters:
   ignoreErrors:
+    - '#Access to an undefined property Cookie::\$viewed.#'
     - '#Call to method assign\(\) on an unknown class Smarty_Data#'
