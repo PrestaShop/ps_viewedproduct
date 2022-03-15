@@ -236,6 +236,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
 
         if (!in_array($idProduct, $arr)) {
             $arr[] = $idProduct;
+            $arr = array_reverse(array_slice(array_reverse($arr), 0, (int) (Configuration::get('PRODUCTS_VIEWED_NBR') + 1)));
 
             $this->context->cookie->viewed = trim(implode(',', $arr), ',');
         }
