@@ -173,13 +173,6 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
         ];
     }
 
-    public function getCacheId($name = null)
-    {
-        $key = implode('|', $this->getViewedProductIds());
-
-        return parent::getCacheId('ps_viewedproduct|' . $key);
-    }
-
     public function renderWidget($hookName = null, array $configuration = [])
     {
         if (isset($configuration['product']['id_product'])) {
@@ -196,17 +189,15 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
             return;
         }
 
-        if (!$this->isCached($this->templateFile, $this->getCacheId())) {
-            $variables = $this->getWidgetVariables($hookName, $configuration);
+        $variables = $this->getWidgetVariables($hookName, $configuration);
 
-            if (empty($variables)) {
-                return false;
-            }
-
-            $this->smarty->assign($variables);
+        if (empty($variables)) {
+            return false;
         }
 
-        return $this->fetch($this->templateFile, $this->getCacheId());
+        $this->smarty->assign($variables);
+        
+        return $this->fetch($this->templateFile);
     }
 
     public function getWidgetVariables($hookName = null, array $configuration = [])
@@ -245,13 +236,10 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
     {
         $viewedProductsIds = array_reverse(explode(',', $this->context->cookie->viewed));
         if (null !== $this->currentProductId && in_array($this->currentProductId, $viewedProductsIds)) {
-            $viewedProductsIds = array_diff($viewedProductsIds, [$this->currentProductId]);
+            $viewedProductsIds = array_diff($viewedProductsIds, array($this->currentProductId));
         }
 
-        $existingProducts = $this->getExistingProductsIds();
-        $viewedProductsIds = array_filter($viewedProductsIds, function ($entry) use ($existingProducts) {
-            return in_array($entry, $existingProducts);
-        });
+        $viewedProductsIds = $this->getViewedAndActiveProductIds($viewedProductsIds);
 
         return array_slice($viewedProductsIds, 0, (int) (Configuration::get('PRODUCTS_VIEWED_NBR')));
     }
@@ -295,16 +283,22 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
         return false;
     }
 
-    /**
-     * @return array the list of active product ids
+    
+     /**
+     * @return array the list of active product ids.
      */
-    private function getExistingProductsIds()
+    private function getViewedAndActiveProductIds(array $filter_ids = array())
     {
-        $existingProductsQuery = Db::getInstance((bool) _PS_USE_SQL_SLAVE_)->executeS('
-            SELECT p.id_product
-            FROM ' . _DB_PREFIX_ . 'product p
-            WHERE p.active = 1'
-        );
+        if(empty($filter_ids)){
+            return array();
+        }else{
+            $existingProductsQuery = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS('
+                SELECT p.id_product
+                FROM ' . _DB_PREFIX_ . 'product p
+                WHERE id_product IN('.implode(',', $filter_ids).')
+                AND p.active = 1'
+            );
+        }
 
         return array_map(function ($entry) {
             return $entry['id_product'];
