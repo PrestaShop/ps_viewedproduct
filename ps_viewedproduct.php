@@ -43,7 +43,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
     {
         $this->name = 'ps_viewedproduct';
         $this->author = 'PrestaShop';
-        $this->version = '1.2.2';
+        $this->version = '1.2.3';
         $this->tab = 'front_office_features';
         $this->need_instance = 0;
 
