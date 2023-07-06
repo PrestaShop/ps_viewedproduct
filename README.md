@@ -4,6 +4,10 @@
 
 Display a kind of showcase on your product pages with recently viewed products.
 
+## Compatibility
+
+PrestaShop: `1.7.0.0` or later
+
 ## Multistore compatibility
 
 This module is compatible with the multistore :heavy_check_mark: <br/>
