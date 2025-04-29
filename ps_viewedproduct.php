@@ -247,11 +247,12 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
         if (null !== $this->currentProductId && in_array($this->currentProductId, $viewedProductsIds)) {
             $viewedProductsIds = array_diff($viewedProductsIds, [$this->currentProductId]);
         }
-
-        $existingProducts = $this->getExistingProductsIds($viewedProductsIds);
-        $viewedProductsIds = array_filter($viewedProductsIds, function ($entry) use ($existingProducts) {
-            return in_array($entry, $existingProducts);
-        });
+		if (!empty($viewedProductsIds)) {
+			$existingProducts = $this->getExistingProductsIds($viewedProductsIds);
+			$viewedProductsIds = array_filter($viewedProductsIds, function ($entry) use ($existingProducts) {
+				return in_array($entry, $existingProducts);
+			});
+		}
 
         return array_slice($viewedProductsIds, 0, (int) (Configuration::get('PRODUCTS_VIEWED_NBR')));
     }
