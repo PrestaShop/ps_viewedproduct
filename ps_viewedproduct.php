@@ -247,11 +247,12 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
         if (null !== $this->currentProductId && in_array($this->currentProductId, $viewedProductsIds)) {
             $viewedProductsIds = array_diff($viewedProductsIds, [$this->currentProductId]);
         }
-
-        $existingProducts = $this->getExistingProductsIds();
-        $viewedProductsIds = array_filter($viewedProductsIds, function ($entry) use ($existingProducts) {
-            return in_array($entry, $existingProducts);
-        });
+		if (!empty($viewedProductsIds)) {
+			$existingProducts = $this->getExistingProductsIds($viewedProductsIds);
+			$viewedProductsIds = array_filter($viewedProductsIds, function ($entry) use ($existingProducts) {
+				return in_array($entry, $existingProducts);
+			});
+		}
 
         return array_slice($viewedProductsIds, 0, (int) (Configuration::get('PRODUCTS_VIEWED_NBR')));
     }
@@ -323,12 +324,15 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
     /**
      * @return array the list of active product ids
      */
-    private function getExistingProductsIds()
-    {
+    private function getExistingProductsIds($productIds = [])
+	{
+		$in_clause = (!empty($productIds)) ? ' AND p.id_product IN (' . implode(',', array_map('intval', $productIds)) . ')' : '';
+
+		// Get all active products from the database
         $existingProductsQuery = Db::getInstance((bool) _PS_USE_SQL_SLAVE_)->executeS('
             SELECT p.id_product
             FROM ' . _DB_PREFIX_ . 'product p
-            WHERE p.active = 1'
+            WHERE p.active = 1'. $in_clause
         );
 
         return array_map(function ($entry) {
