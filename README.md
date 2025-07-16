@@ -4,12 +4,24 @@
 
 Display a kind of showcase on your product pages with recently viewed products.
 
+## Compatibility
+
+PrestaShop: `1.7.0.0` or later
+
 ## Multistore compatibility
 
 This module is compatible with the multistore :heavy_check_mark: <br/>
 It can be configured differently from one store to another.<br/>
 It can be configured quickly in the same way on all stores thanks to the all shops context or the group of shops.<br/>
 It can be activated on one store and deactivated on another
+
+## How to test
+
+Link to specs : https://docs.prestashop-project.org/functional-documentation/functional-documentation/ux-ui/back-office/improve/modules/viewed-products-block
+
+Check on the Homepage that the “Viewed products” block is well displayed.
+On BO, configure the number of products to display.
+Make sure the module is hooked to displayFooterProduct.
 
 ## Reporting issues
 

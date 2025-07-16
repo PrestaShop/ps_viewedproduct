@@ -42,7 +42,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
     {
         $this->name = 'ps_viewedproduct';
         $this->author = 'PrestaShop';
-        $this->version = '1.2.4';
+        $this->version = '1.2.5';
         $this->tab = 'front_office_features';
         $this->need_instance = 0;
 
@@ -260,51 +260,64 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
     {
         $productIds = $this->getViewedProductIds();
 
-        if (!empty($productIds)) {
-            $assembler = new ProductAssembler($this->context);
-
-            $presenterFactory = new ProductPresenterFactory($this->context);
-            $presentationSettings = $presenterFactory->getPresentationSettings();
-            if (version_compare(_PS_VERSION_, '1.7.5', '>=')) {
-                $presenter = new \PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductListingPresenter(
-                    new ImageRetriever(
-                        $this->context->link
-                    ),
-                    $this->context->link,
-                    new PriceFormatter(),
-                    new ProductColorsRetriever(),
-                    $this->context->getTranslator()
-                );
-            } else {
-                $presenter = new \PrestaShop\PrestaShop\Core\Product\ProductListingPresenter(
-                    new ImageRetriever(
-                        $this->context->link
-                    ),
-                    $this->context->link,
-                    new PriceFormatter(),
-                    new ProductColorsRetriever(),
-                    $this->context->getTranslator()
-                );
-            }
-
-            $products_for_template = [];
-
-            if (is_array($productIds)) {
-                foreach ($productIds as $productId) {
-                    if ($this->currentProductId !== $productId) {
-                        $products_for_template[] = $presenter->present(
-                            $presentationSettings,
-                            $assembler->assembleProduct(['id_product' => $productId]),
-                            $this->context->language
-                        );
-                    }
-                }
-            }
-
-            return $products_for_template;
+        if (empty($productIds)) {
+            return false;
         }
 
-        return false;
+        $assembler = new ProductAssembler($this->context);
+
+        $presenterFactory = new ProductPresenterFactory($this->context);
+        $presentationSettings = $presenterFactory->getPresentationSettings();
+        if (version_compare(_PS_VERSION_, '1.7.5', '>=')) {
+            $presenter = new \PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductListingPresenter(
+                new ImageRetriever(
+                    $this->context->link
+                ),
+                $this->context->link,
+                new PriceFormatter(),
+                new ProductColorsRetriever(),
+                $this->context->getTranslator()
+            );
+        } else {
+            $presenter = new \PrestaShop\PrestaShop\Core\Product\ProductListingPresenter(
+                new ImageRetriever(
+                    $this->context->link
+                ),
+                $this->context->link,
+                new PriceFormatter(),
+                new ProductColorsRetriever(),
+                $this->context->getTranslator()
+            );
+        }
+
+        // Now, we can present the products for the template.
+        $products_for_template = [];
+
+        if (is_array($productIds)) {
+            // Prepare a standardized array with products
+            $rawProducts = [];
+            foreach ($productIds as $productId) {
+                if ($this->currentProductId == $productId) {
+                    continue;
+                }
+                $rawProducts[] = ['id_product' => $productId];
+            }
+
+            // Assemble & present in bulk or separately, depending on core version
+            $assembleInBulk = method_exists($assembler, 'assembleProducts');
+            if ($assembleInBulk) {
+                $rawProducts = $assembler->assembleProducts($rawProducts);
+            }
+            foreach ($rawProducts as $rawProduct) {
+                $products_for_template[] = $presenter->present(
+                    $presentationSettings,
+                    ($assembleInBulk ? $rawProduct : $assembler->assembleProduct($rawProduct)),
+                    $this->context->language
+                );
+            }
+        }
+
+        return $products_for_template;
     }
 
     /**
