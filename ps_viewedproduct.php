@@ -248,7 +248,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
             $viewedProductsIds = array_diff($viewedProductsIds, [$this->currentProductId]);
         }
 
-        $activeProducts = $this->getActiveProductsIds($viewedProductsIds);
+        $activeProducts = $this->getExistingProductsIds($viewedProductsIds);
         $viewedProductsIds = array_filter($viewedProductsIds, function ($entry) use ($activeProducts) {
             return in_array($entry, $activeProducts);
         });
@@ -325,7 +325,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
      *
      * @return array the list of active product ids among those provided
      */
-    private function getActiveProductsIds(array $productIds = [])
+    private function getExistingProductsIds(array $productIds = [])
     {
         if (empty($productIds)) {
             return [];
@@ -333,9 +333,9 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
 
         $activeProductsQuery = Db::getInstance((bool) _PS_USE_SQL_SLAVE_)->executeS('
             SELECT p.id_product
-            FROM ' . _DB_PREFIX_ . 'product p
+            FROM ' . _DB_PREFIX_ . 'product_shop p
             WHERE p.active = 1 
-            AND p.id_product IN (' . implode(',', array_map('intval', $productIds)) . ')'
+            AND p.id_product IN (' . implode(',', array_map('intval', $productIds)) . ')' . Shop::addSqlRestriction(false, 'p')
         );
 
         return array_map(function ($entry) {

@@ -4,3 +4,4 @@ includes:
 parameters:
   ignoreErrors:
     - '#Access to an undefined property Cookie::\$viewed.#'
+    - '#Parameter \#1 \$share of static method ShopCore::addSqlRestriction\(\) expects int, false given.#'
