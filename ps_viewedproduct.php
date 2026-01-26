@@ -322,6 +322,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
 
     /**
      * @param array $productIds List of product IDs to check
+     *
      * @return array the list of active product ids among those provided
      */
     private function getActiveProductsIds(array $productIds = [])
