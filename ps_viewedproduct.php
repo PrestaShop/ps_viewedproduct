@@ -90,7 +90,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
         $output = '';
 
         if (Tools::isSubmit('submitBlockViewed')) {
-            if (!($productNbr = Tools::getValue('PRODUCTS_VIEWED_NBR')) || empty($productNbr)) {
+            if (!($productNbr = Tools::getValue('PRODUCTS_VIEWED_NBR'))) {
                 $output .= $this->displayError($this->trans(
                     'You must fill in the \'Products displayed\' field.',
                     [],
