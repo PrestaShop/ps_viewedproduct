@@ -6,7 +6,7 @@ Display a kind of showcase on your product pages with recently viewed products.
 
 ## Compatibility
 
-PrestaShop: `1.7.0.0` or later
+PrestaShop: `8.1.0` or later
 
 ## Multistore compatibility
 

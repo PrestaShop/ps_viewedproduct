@@ -47,7 +47,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
         $this->need_instance = 0;
 
         $this->ps_versions_compliancy = [
-            'min' => '1.7.0.0',
+            'min' => '8.1.0',
             'max' => _PS_VERSION_,
         ];
 
@@ -90,7 +90,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
         $output = '';
 
         if (Tools::isSubmit('submitBlockViewed')) {
-            if (!($productNbr = Tools::getValue('PRODUCTS_VIEWED_NBR')) || empty($productNbr)) {
+            if (!($productNbr = Tools::getValue('PRODUCTS_VIEWED_NBR'))) {
                 $output .= $this->displayError($this->trans(
                     'You must fill in the \'Products displayed\' field.',
                     [],
@@ -268,27 +268,15 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
 
         $presenterFactory = new ProductPresenterFactory($this->context);
         $presentationSettings = $presenterFactory->getPresentationSettings();
-        if (version_compare(_PS_VERSION_, '1.7.5', '>=')) {
-            $presenter = new \PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductListingPresenter(
-                new ImageRetriever(
-                    $this->context->link
-                ),
-                $this->context->link,
-                new PriceFormatter(),
-                new ProductColorsRetriever(),
-                $this->context->getTranslator()
-            );
-        } else {
-            $presenter = new \PrestaShop\PrestaShop\Core\Product\ProductListingPresenter(
-                new ImageRetriever(
-                    $this->context->link
-                ),
-                $this->context->link,
-                new PriceFormatter(),
-                new ProductColorsRetriever(),
-                $this->context->getTranslator()
-            );
-        }
+        $presenter = new \PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductListingPresenter(
+            new ImageRetriever(
+                $this->context->link
+            ),
+            $this->context->link,
+            new PriceFormatter(),
+            new ProductColorsRetriever(),
+            $this->context->getTranslator()
+        );
 
         // Now, we can present the products for the template.
         $products_for_template = [];
