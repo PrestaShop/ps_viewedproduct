@@ -42,7 +42,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
     {
         $this->name = 'ps_viewedproduct';
         $this->author = 'PrestaShop';
-        $this->version = '1.2.5';
+        $this->version = '2.0.0';
         $this->tab = 'front_office_features';
         $this->need_instance = 0;
 
@@ -70,19 +70,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
             && Configuration::updateValue('PRODUCTS_VIEWED_NBR', 8)
             && $this->registerHook('displayFooterProduct')
             && $this->registerHook('displayProductAdditionalInfo')
-            && $this->registerHook('actionObjectProductDeleteAfter')
-            && $this->registerHook('actionObjectProductUpdateAfter')
         ;
-    }
-
-    public function hookActionObjectProductDeleteAfter($params)
-    {
-        $this->_clearCache($this->templateFile);
-    }
-
-    public function hookActionObjectProductUpdateAfter($params)
-    {
-        $this->_clearCache($this->templateFile);
     }
 
     public function getContent()
@@ -100,8 +88,6 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
                 $output .= $this->displayError($this->trans('Invalid number.', [], 'Modules.Viewedproduct.Admin'));
             } else {
                 Configuration::updateValue('PRODUCTS_VIEWED_NBR', (int) $productNbr);
-
-                $this->_clearCache($this->templateFile);
 
                 $output .= $this->displayConfirmation($this->trans(
                     'The settings have been updated.',
@@ -172,13 +158,6 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
         ];
     }
 
-    public function getCacheId($name = null)
-    {
-        $key = implode('|', $this->getViewedProductIds());
-
-        return parent::getCacheId('ps_viewedproduct|' . $key);
-    }
-
     public function renderWidget($hookName = null, array $configuration = [])
     {
         if (isset($configuration['product']['id_product'])) {
@@ -195,17 +174,15 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
             return;
         }
 
-        if (!$this->isCached($this->templateFile, $this->getCacheId())) {
-            $variables = $this->getWidgetVariables($hookName, $configuration);
+        $variables = $this->getWidgetVariables($hookName, $configuration);
 
-            if (empty($variables)) {
-                return false;
-            }
-
-            $this->smarty->assign($variables);
+        if (empty($variables)) {
+            return false;
         }
 
-        return $this->fetch($this->templateFile, $this->getCacheId());
+        $this->smarty->assign($variables);
+
+        return $this->fetch($this->templateFile);
     }
 
     public function getWidgetVariables($hookName = null, array $configuration = [])
