@@ -42,12 +42,12 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
     {
         $this->name = 'ps_viewedproduct';
         $this->author = 'PrestaShop';
-        $this->version = '1.2.5';
+        $this->version = '2.0.0';
         $this->tab = 'front_office_features';
         $this->need_instance = 0;
 
         $this->ps_versions_compliancy = [
-            'min' => '1.7.0.0',
+            'min' => '8.1.0',
             'max' => _PS_VERSION_,
         ];
 
@@ -70,19 +70,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
             && Configuration::updateValue('PRODUCTS_VIEWED_NBR', 8)
             && $this->registerHook('displayFooterProduct')
             && $this->registerHook('displayProductAdditionalInfo')
-            && $this->registerHook('actionObjectProductDeleteAfter')
-            && $this->registerHook('actionObjectProductUpdateAfter')
         ;
-    }
-
-    public function hookActionObjectProductDeleteAfter($params)
-    {
-        $this->_clearCache($this->templateFile);
-    }
-
-    public function hookActionObjectProductUpdateAfter($params)
-    {
-        $this->_clearCache($this->templateFile);
     }
 
     public function getContent()
@@ -90,7 +78,7 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
         $output = '';
 
         if (Tools::isSubmit('submitBlockViewed')) {
-            if (!($productNbr = Tools::getValue('PRODUCTS_VIEWED_NBR')) || empty($productNbr)) {
+            if (!($productNbr = Tools::getValue('PRODUCTS_VIEWED_NBR'))) {
                 $output .= $this->displayError($this->trans(
                     'You must fill in the \'Products displayed\' field.',
                     [],
@@ -100,8 +88,6 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
                 $output .= $this->displayError($this->trans('Invalid number.', [], 'Modules.Viewedproduct.Admin'));
             } else {
                 Configuration::updateValue('PRODUCTS_VIEWED_NBR', (int) $productNbr);
-
-                $this->_clearCache($this->templateFile);
 
                 $output .= $this->displayConfirmation($this->trans(
                     'The settings have been updated.',
@@ -172,13 +158,6 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
         ];
     }
 
-    public function getCacheId($name = null)
-    {
-        $key = implode('|', $this->getViewedProductIds());
-
-        return parent::getCacheId('ps_viewedproduct|' . $key);
-    }
-
     public function renderWidget($hookName = null, array $configuration = [])
     {
         if (isset($configuration['product']['id_product'])) {
@@ -195,17 +174,15 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
             return;
         }
 
-        if (!$this->isCached($this->templateFile, $this->getCacheId())) {
-            $variables = $this->getWidgetVariables($hookName, $configuration);
+        $variables = $this->getWidgetVariables($hookName, $configuration);
 
-            if (empty($variables)) {
-                return false;
-            }
-
-            $this->smarty->assign($variables);
+        if (empty($variables)) {
+            return false;
         }
 
-        return $this->fetch($this->templateFile, $this->getCacheId());
+        $this->smarty->assign($variables);
+
+        return $this->fetch($this->templateFile);
     }
 
     public function getWidgetVariables($hookName = null, array $configuration = [])
@@ -248,9 +225,9 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
             $viewedProductsIds = array_diff($viewedProductsIds, [$this->currentProductId]);
         }
 
-        $existingProducts = $this->getExistingProductsIds();
-        $viewedProductsIds = array_filter($viewedProductsIds, function ($entry) use ($existingProducts) {
-            return in_array($entry, $existingProducts);
+        $activeProducts = $this->getExistingProductsIds($viewedProductsIds);
+        $viewedProductsIds = array_filter($viewedProductsIds, function ($entry) use ($activeProducts) {
+            return in_array($entry, $activeProducts);
         });
 
         return array_slice($viewedProductsIds, 0, (int) (Configuration::get('PRODUCTS_VIEWED_NBR')));
@@ -268,27 +245,15 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
 
         $presenterFactory = new ProductPresenterFactory($this->context);
         $presentationSettings = $presenterFactory->getPresentationSettings();
-        if (version_compare(_PS_VERSION_, '1.7.5', '>=')) {
-            $presenter = new \PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductListingPresenter(
-                new ImageRetriever(
-                    $this->context->link
-                ),
-                $this->context->link,
-                new PriceFormatter(),
-                new ProductColorsRetriever(),
-                $this->context->getTranslator()
-            );
-        } else {
-            $presenter = new \PrestaShop\PrestaShop\Core\Product\ProductListingPresenter(
-                new ImageRetriever(
-                    $this->context->link
-                ),
-                $this->context->link,
-                new PriceFormatter(),
-                new ProductColorsRetriever(),
-                $this->context->getTranslator()
-            );
-        }
+        $presenter = new \PrestaShop\PrestaShop\Adapter\Presenter\Product\ProductListingPresenter(
+            new ImageRetriever(
+                $this->context->link
+            ),
+            $this->context->link,
+            new PriceFormatter(),
+            new ProductColorsRetriever(),
+            $this->context->getTranslator()
+        );
 
         // Now, we can present the products for the template.
         $products_for_template = [];
@@ -321,18 +286,25 @@ class Ps_Viewedproduct extends Module implements WidgetInterface
     }
 
     /**
-     * @return array the list of active product ids
+     * @param array $productIds List of product IDs to check
+     *
+     * @return array the list of active product ids among those provided
      */
-    private function getExistingProductsIds()
+    private function getExistingProductsIds(array $productIds = [])
     {
-        $existingProductsQuery = Db::getInstance((bool) _PS_USE_SQL_SLAVE_)->executeS('
+        if (empty($productIds)) {
+            return [];
+        }
+
+        $activeProductsQuery = Db::getInstance((bool) _PS_USE_SQL_SLAVE_)->executeS('
             SELECT p.id_product
-            FROM ' . _DB_PREFIX_ . 'product p
-            WHERE p.active = 1'
+            FROM ' . _DB_PREFIX_ . 'product_shop p
+            WHERE p.active = 1 
+            AND p.id_product IN (' . implode(',', array_map('intval', $productIds)) . ')' . Shop::addSqlRestriction(false, 'p')
         );
 
         return array_map(function ($entry) {
             return $entry['id_product'];
-        }, $existingProductsQuery);
+        }, $activeProductsQuery);
     }
 }
